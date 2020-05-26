@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-alpine
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      labels:
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.172-27-11-10.nip.io`)"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
+    networks:
+    - traefik_traefik
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - jenkins:/var/jenkins_home/
+
+volumes:
+  jenkins:
+    driver_opts:
+      type: nfs
+      o: addr=172.27.11.40,nolock,soft,rw
+      device: ':/srv/nfs/v0'
+
+networks:
+  traefik_traefik:
+    external: true
